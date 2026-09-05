@@ -1,55 +1,65 @@
-Instale as dependências:
+Mamba Fast Tracker
 
-Bash
-flutter pub get
-Execute o projeto (via emulador ou dispositivo físico):
+O Mamba Fast Tracker é um aplicativo mobile de controle de jejum intermitente e registro calórico diário, desenvolvido integralmente como MVP para o desafio técnico da divisão mobile da Mamba Growth.
 
-Bash
-flutter run
-🛠 Stack Escolhida
+O projeto foi construído com foco em qualidade de produção, resiliência de dados (Offline-First) e uma experiência de usuário (UX) fluida e responsiva, simulando um produto pronto para escala comercial.
+
+Demonstração e Execução
+
+Testar via Navegador (Appetize.io): Clique aqui para testar o APK no navegador (COLE_AQUI_SEU_LINK_DO_APPETIZE)
+Repositório GitHub: github.com/leciof300/mamba-fast-tracker
+
+Stack Tecnológica
+
 Framework: Flutter (v3.47+)
-
 Linguagem: Dart
-
+Persistência Local: shared_preferences
+Notificações Locais: flutter_local_notifications
+Mídia Nativa: image_picker (Câmera e Galeria)
 Build System Nativo: Kotlin DSL (Gradle 9.3.1 / AGP 8.11.1)
 
-Design Pattern de UI: Material 3 / Dark Mode nativo.
+Funcionalidades Entregues
 
-🏗 Arquitetura Utilizada
-Para o escopo de um MVP de 4 dias, optei por uma arquitetura focada no princípio KISS (Keep It Simple, Stupid).
-O aplicativo utiliza StatefulWidgets bem delimitados para o controle de estado da interface e injeção direta de repositórios locais para armazenamento. A estrutura foi construída pensando em componentização (Clean Code), separando visualmente a navegação, o motor do relógio e as lógicas de CRUD de refeições, facilitando uma futura refatoração para camadas mais profundas.
+Autenticação Segura: Tela de login com validação estrita de formato de e-mail e persistência local de sessão (AuthGate).
 
-💡 Decisões Técnicas
-Timer Resiliente (Sem Isolate/Background Services Pesados):
-Em vez de forçar um serviço rodando em segundo plano (que consome bateria e é frequentemente derrubado pelo SO do Android/iOS), o timer é determinístico. Ele salva o timestamp exato (DateTime.now()) no cache. Se o usuário fechar o app e reabrir horas depois, o sistema recalcula o delta de tempo transcorrido matematicamente, simulando um funcionamento perfeito em background de forma super leve.
+Motor de Jejum Resiliente (Core Feature): Suporte a protocolos pré-definidos (12:12, 16:8, 18:6) e protocolos customizados. O timer opera de forma determinística: se o app for encerrado pelo sistema operacional, os dados de progresso sobrevivem sem perda de estado.
 
-Notificações Locais:
-Implementadas diretamente no dispositivo utilizando o flutter_local_notifications para avisos de início e encerramento de jejum, criando engajamento real sem depender de backend.
+Notificações Nativas: Disparos automáticos locais ao iniciar e concluir ciclos de jejum.
 
-UX Responsiva e Câmera Local (Offline-First):
-A interface foi encapsulada com limites de largura (ConstrainedBox) para manter a elegância e não quebrar o layout caso o usuário vire o dispositivo (Landscape) ou use um Tablet. Adicionalmente, foi incluído o recurso de tirar fotos das refeições processando e salvando a imagem localmente no dispositivo.
+Diário de Refeições com Câmera: Adição, edição e exclusão de refeições com captura de foto integrada direto pelo hardware do dispositivo, processando e salvando os arquivos localmente.
 
-📚 Bibliotecas Utilizadas
-shared_preferences: ^2.2.3 (Motor de persistência de dados em cache, sessões e logs numéricos).
+Dashboard de Métricas e Sincronização Diária: Cálculo dinâmico de calorias consumidas versus a meta diária, acompanhado de gráfico de barras evolutivo baseado no histórico real dos últimos 7 dias.
 
-flutter_local_notifications: ^17.0.0 (Disparo de alertas em background).
+Arquitetura e Decisões Técnicas
 
-image_picker: ^1.1.2 (Acesso nativo à câmera do dispositivo para o registro visual das refeições).
+Para cumprir o prazo de entrega de um MVP mantendo alta estabilidade, optei por seguir rigorosamente o princípio KISS (Keep It Simple, Stupid):
 
-⚖️ Trade-offs Considerados
-StatefulWidget vs Clean Architecture (BLoC/MVVM):
-Embora a Clean Architecture associada ao BLoC seja o padrão ouro para manutenção e testes, adotá-la num prazo tão curto poderia atrasar a entrega das core features (Timer e Métricas). Optei por focar primeiro na estabilidade nativa e garantir um aplicativo livre de bugs (um produto real), centralizando o estado nas próprias telas.
+Gerenciamento de Estado Modular: Utilização de StatefulWidgets altamente coesos e componentizados, promovendo uma separação limpa entre navegação, lógica matemática do relógio e operações de CRUD (Clean Code), o que facilita qualquer refatoração futura para camadas avançadas.
 
-SharedPreferences vs SQLite/Hive:
-Como o MVP exige apenas o armazenamento de sessões (Strings), horários (DateTime) e JSONs leves de histórico diário, o shared_preferences atendeu com extrema velocidade. Um banco de dados relacional (SQLite) adicionaria um overhead de migrations desnecessário nesta fase inicial do produto.
+Timer Baseado em Timestamps: Em vez de depender de serviços complexos em segundo plano (background services que drenam bateria e são frequentemente finalizados pelo SO), o app armazena o DateTime.now() exato. O delta temporal é calculado matematicamente ao reabrir a aplicação, garantindo precisão absoluta e baixíssimo consumo de recursos.
 
-🔮 O que melhoraria com mais tempo
-Refatoração Estrutural: Migrar a gestão de estado para BLoC (Business Logic Component), separando o motor de cálculo matemático do timer e a lógica de negócio completamente da camada de UI (Presentation Layer).
+UX Responsiva e Offline-First: Toda a interface foi encapsulada com restrições de largura (ConstrainedBox), garantindo que o layout se adapte elegantemente em tablets ou em modo paisagem (Landscape).
 
-Persistência Avançada (Hive/Isar): Implementar um banco de dados NoSQL rápido (como Hive) para criar tipagem forte (TypeAdapters) nas Entidades de Refeição e Histórico, permitindo queries complexas por períodos (ex: filtrar refeições de meses anteriores).
+Trade-offs Considerados
 
-Testes Automatizados: Adicionar testes unitários (flutter_test) na lógica de cálculo de horas e parseamento de DateTime, garantindo a integridade dos gráficos semanais em pipelines de CI/CD.
+StatefulWidget vs. Clean Architecture (BLoC / MVVM): Embora arquiteturas em camadas desacopladas sejam o padrão ideal para ecossistemas maduros, introduzi-las em um escopo restrito de MVP traria riscos desnecessários de estabilidade e quebra de build nativo. A escolha consciente por centralizar a lógica garantiu um APK 100% funcional e livre de bugs críticos.
 
-⏱ Tempo gasto no desafio: ~4 dias corridos (incluindo troubleshooting de configurações nativas Gradle/Android, implementação offline-first e refino de UX).
+SharedPreferences vs. Bancos Locais (SQLite / Hive): Dado que o escopo exigia salvamento rápido de sessões e pequenos arrays de histórico em JSON, o uso do shared_preferences entregou velocidade de leitura síncrona, eliminando a complexidade de migrações de esquemas (migrations).
 
-Desenvolvido por Lécio Ferreira Guimarães.
+O que melhoraria com mais tempo
+
+Migração Arquitetural: Evoluir a gestão de estado para BLoC, isolando completamente as regras de negócio da camada de apresentação.
+
+Camada de Dados Avançada: Adotar uma solução NoSQL como Hive ou Isar com tipagem forte por TypeAdapters.
+
+Testes Automatizados: Implementar testes unitários cobrindo as funções críticas de cálculo de horas e parsing de datas.
+
+Tempo gasto no desafio: ~4 dias corridos (incluindo resolução de configurações nativas Gradle/Kotlin, implementação offline-first e refino de UX).
+
+Como rodar localmente
+git clone https://github.com/leciof300/mamba-fast-tracker.git
+cd mamba_fast_tracker
+flutter pub get
+flutter run
+
+Desenvolvido com excelência por Lécio Ferreira Guimarães.
